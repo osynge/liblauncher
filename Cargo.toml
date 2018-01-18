@@ -1,0 +1,10 @@
+[package]
+name = "process_watcher"
+version = "0.1.0"
+authors = ["Owen Synge <owen.synge@jaysnest.de>"]
+
+[lib]
+name = "process_watcher" 
+
+[dependencies]
+libc = "0.2"
