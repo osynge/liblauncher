@@ -12,31 +12,8 @@ use std::path::Path;
 use std::os::unix::fs::PermissionsExt;
 use std::ffi::CString;
 
-#[derive(Debug)]
-pub enum LauncherError {
-    ExecutableNotFound,
-    ProcessNotFound,
-    WaitpidError,
-    ForkError
-}
-
-type LaunchResult = Result<(), LauncherError>;
-
-#[derive(Debug)]
-pub enum Direction {
-    RedirectRead = 0,
-    RedirectWrite,
-    RedirectIgnore
-}
-
-#[derive(Debug)]
-pub struct LauncherStructPipe {
-	pub file_descriptor_child: i32,
-	file_descriptor_pairent: i32,
-	file_descriptor_id_child: i32,
-	pipe_type: Direction
-}
-
+mod redirect;
+mod const_api;
 
 
 #[derive(Debug)]
@@ -45,7 +22,7 @@ pub struct Launcher {
     pub executable: String,
     pub argv: Vec<String>,
     pub envp: Vec<String>,
-    pub redirects: Vec<LauncherStructPipe>,
+    pub redirects: Vec<redirect::LauncherStructPipe>,
     pub return_code: i32,
 }
 
@@ -62,7 +39,7 @@ impl Launcher {
         })
     }
 
-    pub fn executable_set(&mut self, path: &str) -> LaunchResult {
+    pub fn executable_set(&mut self, path: &str) -> const_api::LaunchResult {
         self.executable =  String::from(path);
         Ok(())
     }
@@ -71,10 +48,10 @@ impl Launcher {
         return Ok(String::clone(&self.executable));
     }
 
-    pub fn launch(&self) -> LaunchResult {
+    pub fn launch(&self) -> const_api::LaunchResult {
         let path = Path::new(&self.executable);
         if false == path.exists() {
-            return Err(LauncherError::ExecutableNotFound);
+            return Err(const_api::LauncherError::ExecutableNotFound);
         } 
         let md = path.metadata().unwrap();
         let perms = md.permissions();
@@ -84,7 +61,7 @@ impl Launcher {
 
             let launched_process_id = fork();
             if launched_process_id < 0 {
-                return Err(LauncherError::ForkError);
+                return Err(const_api::LauncherError::ForkError);
             }
             child_id = launched_process_id;
         }
