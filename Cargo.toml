@@ -1,10 +1,10 @@
 [package]
-name = "process_watcher"
-version = "0.1.0"
+name = "feaer"
+version = "0.0.1"
 authors = ["Owen Synge <owen.synge@jaysnest.de>"]
 
 [lib]
-name = "process_watcher" 
+name = "feaer"
 
 [dependencies]
 libc = "0.2"
