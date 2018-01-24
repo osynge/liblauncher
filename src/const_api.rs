@@ -1,17 +1,19 @@
-
 #[derive(Debug)]
 pub enum LauncherError {
     ExecutableNotFound,
     ProcessNotFound,
     WaitpidError,
-    ForkError
+    ForkError,
+    InvalidChildFd,
+    InvalidRedirectPairentFd,
 }
 
 pub type LaunchResult = Result<(), LauncherError>;
 
 #[derive(Debug)]
-pub enum Direction {
+pub enum RedirectType {
     RedirectRead = 0,
     RedirectWrite,
-    RedirectIgnore
+    RedirectIgnore,
+    RedirectMirror
 }
