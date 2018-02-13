@@ -59,6 +59,10 @@ impl Launcher {
         Ok(())
     }
 
+    pub fn redirect_fd(&mut self, child_fd: u32) -> Option<u32> {
+        self.red.redirect_fd(child_fd)
+    }
+
     pub fn executable_get(&self) -> Result<String, ()> {
         return Ok(String::clone(&self.executable));
     }
@@ -78,7 +82,6 @@ impl Launcher {
 
         let child_id;
         unsafe {
-
             let launched_process_id = fork();
             if launched_process_id < 0 {
                 return Err(const_api::LauncherError::ForkError);
@@ -107,12 +110,13 @@ impl Launcher {
             let mut p_envp: Vec<_> = cstr_envp.iter().map(|env| env.as_ptr()).collect();
             p_envp.push(std::ptr::null());
             child_envp = p_envp.as_ptr();
+            self.red.post_launch_child();
             unsafe {
                 execvpe(child_path, child_argv, child_envp);
             }
             panic!("execvpe failed.");
         } else {
-
+            self.red.post_launch_pairent();
         }
 
 
