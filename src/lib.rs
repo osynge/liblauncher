@@ -5,5 +5,5 @@ mod redirect;
 mod const_api;
 mod feaer;
 
-
-pub use feaer::Launcher as Launcher;
+pub use const_api::RedirectType;
+pub use feaer::Launcher;
