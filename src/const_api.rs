@@ -10,10 +10,10 @@ pub enum LauncherError {
 
 pub type LaunchResult = Result<(), LauncherError>;
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum RedirectType {
     RedirectRead = 0,
     RedirectWrite,
     RedirectIgnore,
-    RedirectMirror
+    RedirectMirror,
 }
