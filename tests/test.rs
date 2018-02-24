@@ -1,11 +1,9 @@
 extern crate feaer;
 extern crate libc;
 use std::fs::File;
-use libc::read;
-use libc::c_void;
-use libc::c_char;
-use libc::size_t;
-
+use std::os::unix::io::FromRawFd;
+use libc::c_int;
+use std::io::Read;
 
 #[test]
 fn test_launch() {
@@ -28,8 +26,20 @@ fn test_launch() {
             assert!(false);
         }
     }
+
+
+    let jon = bar.redirect_fd(0);
+    let redirect_file_id: c_int;
+    match jon {
+        Some(v) => {
+            redirect_file_id = v as c_int;
+        }
+        None => {
+            assert!(false);
+            return;
+        }
+    }
     let result = bar.wait();
-    println!("{:?}", result);
 }
 
 
@@ -43,14 +53,64 @@ fn test_launch2() {
     let pathname = String::from("/bin/echo");
     let rc = bar.executable_set(&pathname);
     bar.argv.push(String::from("/bin/echo"));
-    bar.argv.push(String::from("x"));
+    bar.argv.push(String::from("test_launch2"));
     match rc {
         Ok(_) => {}
         Err(_) => {
             assert!(false);
         }
     }
-    let rd1 = bar.redirect_set(0, None, Some(feaer::RedirectType::RedirectWrite));
+    let rd1 = bar.redirect_set(0, None, Some(feaer::RedirectType::RedirectMirror));
+    match rd1 {
+        Ok(_) => {}
+        Err(_) => {
+            assert!(false);
+        }
+    }
+
+    let rd2 = bar.redirect_set(1, None, Some(feaer::RedirectType::RedirectMirror));
+    match rd2 {
+        Ok(_) => {}
+        Err(_) => {
+            assert!(false);
+        }
+    }
+    let rd3 = bar.redirect_set(2, None, Some(feaer::RedirectType::RedirectMirror));
+    match rd3 {
+        Ok(_) => {}
+        Err(_) => {
+            assert!(false);
+        }
+    }
+    let rc = bar.launch();
+    match rc {
+        Ok(_) => {}
+        Err(_) => {
+            assert!(false);
+        }
+    }
+    let result = bar.wait();
+    println!("result={:?}=result", result);
+}
+
+
+
+
+#[test]
+fn test_launch3() {
+    let foo = feaer::Launcher::new();
+    let mut bar = foo.unwrap();
+    let pathname = String::from("/bin/echo");
+    let rc = bar.executable_set(&pathname);
+    bar.argv.push(String::from("/bin/echo"));
+    bar.argv.push(String::from("xjjjjjjklk"));
+    match rc {
+        Ok(_) => {}
+        Err(_) => {
+            assert!(false);
+        }
+    }
+    let rd1 = bar.redirect_set(0, None, Some(feaer::RedirectType::RedirectMirror));
     match rd1 {
         Ok(_) => {}
         Err(_) => {
@@ -65,7 +125,7 @@ fn test_launch2() {
             assert!(false);
         }
     }
-    let rd3 = bar.redirect_set(2, None, Some(feaer::RedirectType::RedirectRead));
+    let rd3 = bar.redirect_set(2, None, Some(feaer::RedirectType::RedirectMirror));
     match rd3 {
         Ok(_) => {}
         Err(_) => {
@@ -79,25 +139,31 @@ fn test_launch2() {
             assert!(false);
         }
     }
-    let rdfd1 = bar.redirect_fd(1);
-    assert!(rdfd1 != None);
-    match rdfd1 {
-        Some(x) => {
-            assert!(x != 0);
-            let bill: File;
-            let mut buff: [char; 1000] = ['\0'; 1000];
-            let buff_ptr = buff.as_mut_ptr() as *mut libc::c_void;
-            let fd = x as i32;
-            //println!("{:?}", x);
-            let count: libc::size_t = 1000;
-            unsafe {
-                let read_bytes = read(fd, buff_ptr, count);
-            }
-            println!("{:?}", buff[0]);
-            assert!(buff[0] == '\n');
+    let redirect_fd_rc = bar.redirect_fd(1);
+    let fd_redirect: i32;
+    match redirect_fd_rc {
+        Some(v) => {
+            fd_redirect = v as i32;
         }
-        None => {}
+        None => {
+            assert!(false);
+            return;
+        }
     }
-    let result = bar.wait();
-    println!("{:?}", result);
+    println!("result={:?}=result", fd_redirect);
+
+
+    let mut contents = String::new();
+
+    let mut george: std::fs::File;
+
+    unsafe {
+        let mut bill = File::from_raw_fd(fd_redirect);
+        for c in bill.bytes() {
+            println!("line:{}", c.unwrap());
+        }
+        println!("nodata:");
+    }
+    println!("With text:\n{}", contents);
+
 }
