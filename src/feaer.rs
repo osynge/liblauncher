@@ -79,7 +79,6 @@ impl Launcher {
         if pre_launch_rc.is_err() {
             return pre_launch_rc;
         }
-
         let child_id;
         unsafe {
             let launched_process_id = fork();
@@ -116,6 +115,7 @@ impl Launcher {
             }
             panic!("execvpe failed.");
         } else {
+            self.launched_process_id = child_id;
             self.red.post_launch_pairent();
         }
 
@@ -135,7 +135,7 @@ impl Launcher {
         }
         if rc == -1 {
             println!("waitpid failed!");
-            return Err(-1);
+            return Err(-3);
         }
         if rc == self.launched_process_id {
             self.return_code = status;
