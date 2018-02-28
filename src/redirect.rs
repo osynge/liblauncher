@@ -168,6 +168,8 @@ impl LauncherStructPipe {
                 return Err(LauncherStructPipeError::Unknown);
             }
         }
+        self.file_descriptor_pairent = self.file_descriptor_write;
+        self.file_descriptor_read = None;
         Ok(())
     }
 
@@ -265,6 +267,8 @@ impl LauncherStructPipe {
                 return Err(LauncherStructPipeError::Unknown);
             }
         }
+        self.file_descriptor_pairent = self.file_descriptor_read;
+        self.file_descriptor_read = None;
         Ok(())
     }
 
