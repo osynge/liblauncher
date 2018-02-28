@@ -11,7 +11,7 @@ use std::path::Path;
 use std::os::unix::fs::PermissionsExt;
 use std::ffi::CString;
 
-use redirect;
+use redirect_container;
 use const_api;
 
 
@@ -21,9 +21,8 @@ pub struct Launcher {
     pub executable: String,
     pub argv: Vec<String>,
     pub envp: Vec<String>,
-    pub redirect: Vec<redirect::LauncherStructPipe>,
     pub return_code: i32,
-    red: redirect::RedirectContainer,
+    red: redirect_container::RedirectContainer,
 }
 
 
@@ -35,9 +34,8 @@ impl Launcher {
             executable: String::new(),
             argv: Vec::new(),
             envp: Vec::new(),
-            redirect: Vec::new(),
             return_code: -1,
-            red: redirect::RedirectContainer::new(),
+            red: redirect_container::RedirectContainer::new(),
         })
     }
 
