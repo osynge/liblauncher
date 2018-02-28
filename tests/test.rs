@@ -4,6 +4,7 @@ use std::fs::File;
 use std::os::unix::io::FromRawFd;
 use libc::c_int;
 use std::io::Read;
+use std::str;
 
 #[test]
 fn test_launch() {
@@ -27,7 +28,6 @@ fn test_launch() {
         }
     }
 
-
     let jon = bar.redirect_fd(0);
     let redirect_file_id: c_int;
     match jon {
@@ -41,10 +41,6 @@ fn test_launch() {
     }
     let result = bar.wait();
 }
-
-
-
-
 
 #[test]
 fn test_launch2() {
@@ -93,9 +89,6 @@ fn test_launch2() {
     println!("result={:?}=result", result);
 }
 
-
-
-
 #[test]
 fn test_launch3() {
     let foo = feaer::Launcher::new();
@@ -103,6 +96,7 @@ fn test_launch3() {
     let pathname = String::from("/bin/echo");
     let rc = bar.executable_set(&pathname);
     bar.argv.push(String::from("/bin/echo"));
+    bar.argv.push(String::from("xjjjjjjklk"));
     bar.argv.push(String::from("xjjjjjjklk"));
     match rc {
         Ok(_) => {}
@@ -151,19 +145,27 @@ fn test_launch3() {
         }
     }
     println!("result={:?}=result", fd_redirect);
-
-
-    let mut contents = String::new();
-
-    let mut george: std::fs::File;
-
+    let mut bill: File;
+    let mut buf: [u8; 1024] = [0; 1024];
+    let read_bytes;
     unsafe {
-        let mut bill = File::from_raw_fd(fd_redirect);
-        for c in bill.bytes() {
-            println!("line:{}", c.unwrap());
-        }
-        println!("nodata:");
-    }
-    println!("With text:\n{}", contents);
+        bill = File::from_raw_fd(fd_redirect);
 
+        let readrc = bill.read(&mut buf);
+        read_bytes = match readrc {
+            Ok(v) => v,
+            Err(e) => {
+                panic!("Invalid read: {}", e);
+            }
+        };
+    }
+    if read_bytes == 0 {
+        println!("read_bytes={:?}", read_bytes);
+        return;
+    }
+    let s = match str::from_utf8(&buf[0..read_bytes]) {
+        Ok(v) => v,
+        Err(e) => panic!("Invalid UTF-8 sequence: {}", e),
+    };
+    println!("content={:?}=result", s);
 }
