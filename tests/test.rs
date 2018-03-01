@@ -96,8 +96,8 @@ fn test_launch3() {
     let pathname = String::from("/bin/echo");
     let rc = bar.executable_set(&pathname);
     bar.argv.push(String::from("/bin/echo"));
-    bar.argv.push(String::from("xjjjjjjklk"));
-    bar.argv.push(String::from("xjjjjjjklk"));
+    bar.argv.push(String::from("one"));
+    bar.argv.push(String::from("two"));
     match rc {
         Ok(_) => {}
         Err(_) => {
