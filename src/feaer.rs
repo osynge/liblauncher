@@ -72,7 +72,6 @@ impl Launcher {
         }
         let md = path.metadata().unwrap();
         let perms = md.permissions();
-        println!("permissions: {}", perms.mode());
         let pre_launch_rc = self.red.prep_launch();
         if pre_launch_rc.is_err() {
             return pre_launch_rc;
