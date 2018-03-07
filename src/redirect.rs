@@ -93,7 +93,13 @@ impl LauncherStructPipe {
     }
 
     fn close_file_descriptor_read(&mut self) -> Result<(), LauncherStructPipeError> {
-        let filedes_w = self.file_descriptor_read.unwrap() as c_int;
+        let file_descriptor_read = match self.file_descriptor_read {
+            Some(j) => j,
+            None => {
+                return Ok(());
+            }
+        };
+        let filedes_w = file_descriptor_read as c_int;
         match posix_close(filedes_w) {
             Ok(()) => {
                 self.file_descriptor_read = None;
@@ -106,7 +112,13 @@ impl LauncherStructPipe {
     }
 
     fn close_file_descriptor_write(&mut self) -> Result<(), LauncherStructPipeError> {
-        let filedes_w = self.file_descriptor_write.unwrap() as c_int;
+        let file_descriptor_write = match self.file_descriptor_write {
+            Some(j) => j,
+            None => {
+                return Ok(());
+            }
+        };
+        let filedes_w = file_descriptor_write as c_int;
         match posix_close(filedes_w) {
             Ok(()) => {
                 self.file_descriptor_write = None;
@@ -119,7 +131,13 @@ impl LauncherStructPipe {
     }
 
     fn close_file_descriptor_child(&mut self) -> Result<(), LauncherStructPipeError> {
-        let filedes_w = self.file_descriptor_child.unwrap() as c_int;
+        let file_descriptor_child = match self.file_descriptor_child {
+            Some(j) => j,
+            None => {
+                return Ok(());
+            }
+        };
+        let filedes_w = file_descriptor_child as c_int;
         match posix_close(filedes_w) {
             Ok(()) => {
                 self.file_descriptor_child = None;
@@ -132,7 +150,13 @@ impl LauncherStructPipe {
     }
 
     fn close_file_descriptor_pairent(&mut self) -> Result<(), LauncherStructPipeError> {
-        let filedes_w = self.file_descriptor_pairent.unwrap() as c_int;
+        let file_descriptor_pairent = match self.file_descriptor_pairent {
+            Some(j) => j,
+            None => {
+                return Ok(());
+            }
+        };
+        let filedes_w = file_descriptor_pairent as c_int;
         match posix_close(filedes_w) {
             Ok(()) => {
                 self.file_descriptor_pairent = None;
@@ -145,12 +169,11 @@ impl LauncherStructPipe {
     }
 
     fn prep_launch_mirror(&mut self) -> Result<(), LauncherStructPipeError> {
-        match self.file_descriptor_write {
-            Some(fd_int) => {
-                posix_close(fd_int as i32);
-                self.file_descriptor_write = None;
+        match self.close_file_descriptor_write() {
+            Ok(()) => {}
+            Err(_) => {
+                return Err(LauncherStructPipeError::Unknown);
             }
-            None => {}
         }
         let filedes_c: c_int;
         match self.file_descriptor_child {
