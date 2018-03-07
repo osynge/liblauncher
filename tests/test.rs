@@ -167,5 +167,7 @@ fn test_launch3() {
         Ok(v) => v,
         Err(e) => panic!("Invalid UTF-8 sequence: {}", e),
     };
-    println!("content={:?}=result", s);
+    let output = s.to_string();
+    let test_data = "one two\n".to_string();
+    assert!(output == test_data);
 }
