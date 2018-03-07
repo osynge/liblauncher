@@ -125,7 +125,7 @@ mod tests {
                 assert!(false);
             }
         }
-        let bing = rc.redirect[0].file_descriptor_pairent;
+        let bing = rc.redirect[0].file_descriptor_read;
         match bing {
             Some(v) => {
                 assert!(false);
@@ -133,7 +133,7 @@ mod tests {
             None => {}
         }
         rc.prep_launch();
-        let bing = rc.redirect[0].file_descriptor_pairent;
+        let bing = rc.redirect[0].file_descriptor_read;
         let pairent_file_id: c_int;
         match bing {
             Some(v) => {
@@ -144,6 +144,7 @@ mod tests {
                 return;
             }
         }
+        rc.post_launch_pairent();
         let redirect: c_int;
         let jon = rc.redirect_fd(0);
         let redirect_file_id: c_int;
