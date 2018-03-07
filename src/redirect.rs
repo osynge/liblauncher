@@ -296,21 +296,6 @@ impl LauncherStructPipe {
     }
 
 
-
-    fn post_launch_pairent_close(&mut self) -> Result<(), LauncherStructPipeError> {
-        let filedes_w = self.file_descriptor_child.unwrap() as c_int;
-        match posix_close(filedes_w) {
-            Ok(()) => {
-                self.file_descriptor_child = None;
-            }
-            Err(_) => {
-                return Err(LauncherStructPipeError::Unknown);
-            }
-        }
-        Ok(())
-    }
-
-
     fn post_launch_pairent_redirect_read(&mut self) -> Result<(), LauncherStructPipeError> {
         let filedes_w = self.file_descriptor_write.unwrap() as c_int;
         match posix_close(filedes_w) {
