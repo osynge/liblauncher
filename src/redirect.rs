@@ -31,9 +31,6 @@ fn posix_close(file_num: c_int) -> Result<(), const_api::LauncherError> {
 
     unsafe {
         let rc: c_int;
-        if file_num == 1 {
-            assert!(false);
-        }
         rc = close(file_num);
         if rc == 0 {
             return Ok(());
