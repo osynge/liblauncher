@@ -83,6 +83,46 @@ impl LauncherStructPipe {
         })
     }
 
+    pub(crate) fn redirect_fd_pairent(&mut self) -> Option<u32> {
+        let file_descriptor_pairent: u32;
+        match self.file_descriptor_pairent {
+            Some(j) => {
+                file_descriptor_pairent = j.clone();
+            }
+            None => {
+                return None;
+            }
+        }
+        return Some(file_descriptor_pairent);
+    }
+
+    pub(crate) fn redirect_fd(&mut self) -> Option<u32> {
+        let action: const_api::RedirectType;
+        {
+            let ref mut bill = self.redirect;
+            let jam = bill.as_mut();
+            match jam {
+                Some(redirect_type) => {
+                    action = redirect_type.clone();
+                }
+                None => {
+                    return None;
+                }
+            }
+        }
+        match action {
+            const_api::RedirectType::RedirectRead => self.redirect_fd_pairent(),
+            const_api::RedirectType::RedirectWrite => self.redirect_fd_pairent(),
+            const_api::RedirectType::RedirectMirror => {
+                return None;
+            }
+            const_api::RedirectType::RedirectIgnore => {
+                //dup2_rc = Ok(());
+                return None;
+            }
+        }
+    }
+
     fn prep_launch_fifo(&mut self) -> Result<(), LauncherStructPipeError> {
         let pipe_rc = mkpipe();
         let (file_descriptor_read, file_descriptor_write) = pipe_rc.unwrap();
@@ -436,5 +476,12 @@ impl LauncherStructPipe {
             }
         }
         Ok(())
+    }
+}
+
+impl Drop for LauncherStructPipe {
+    fn drop(&mut self) {
+        self.close_file_descriptor_read();
+        self.close_file_descriptor_write();
     }
 }
