@@ -61,6 +61,24 @@ impl Launcher {
         self.red.redirect_fd(child_fd)
     }
 
+    pub fn redirect_file(&mut self, child_fd: u32) -> Option<File> {
+        let redirect_fd: u32;
+        match self.red.redirect_fd(child_fd) {
+            Some(redirect_fd_rc) => {
+                redirect_fd = redirect_fd_rc;
+            }
+            None => {
+                return None;
+            }
+        }
+        let bill: File;
+        unsafe {
+            let make_file = File::from_raw_fd(redirect_fd as i32);
+            bill = make_file;
+        }
+        return Some(bill);
+    }
+
     pub fn executable_get(&self) -> Result<String, ()> {
         return Ok(String::clone(&self.executable));
     }
