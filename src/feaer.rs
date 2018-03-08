@@ -9,11 +9,13 @@ use libc::WNOHANG;
 use std::result::Result;
 use std::path::Path;
 use std::os::unix::fs::PermissionsExt;
+
+use std::os::unix::io::FromRawFd;
+use std::fs::File;
 use std::ffi::CString;
 
 use redirect_container;
 use const_api;
-
 
 #[derive(Debug)]
 pub struct Launcher {
@@ -24,8 +26,6 @@ pub struct Launcher {
     pub return_code: i32,
     red: redirect_container::RedirectContainer,
 }
-
-
 
 impl Launcher {
     pub fn new() -> Result<Launcher, String> {
@@ -65,13 +65,45 @@ impl Launcher {
         return Ok(String::clone(&self.executable));
     }
 
-    pub fn launch(&mut self) -> const_api::LaunchResult {
+    fn launch_perms(&mut self) -> const_api::LaunchResult {
         let path = Path::new(&self.executable);
         if false == path.exists() {
             return Err(const_api::LauncherError::ExecutableNotFound);
         }
         let md = path.metadata().unwrap();
         let perms = md.permissions();
+        Ok(())
+    }
+
+    fn launch_child(&mut self) -> const_api::LaunchResult {
+        let child_path: *const c_char;
+        let child_argv: *const *const c_char;
+        let child_envp: *const *const c_char;
+        let exec_str = self.executable.clone();
+        let ex1 = CString::new(exec_str).unwrap();
+        child_path = ex1.as_ptr();
+        let cstr_argv: Vec<_> = self.argv
+            .iter()
+            .map(|arg| CString::new(arg.as_str()).unwrap())
+            .collect();
+        let mut p_argv: Vec<_> = cstr_argv.iter().map(|arg| arg.as_ptr()).collect();
+        p_argv.push(std::ptr::null());
+        child_argv = p_argv.as_ptr();
+        let cstr_envp: Vec<_> = self.envp
+            .iter()
+            .map(|env| CString::new(env.as_str()).unwrap())
+            .collect();
+        let mut p_envp: Vec<_> = cstr_envp.iter().map(|env| env.as_ptr()).collect();
+        p_envp.push(std::ptr::null());
+        child_envp = p_envp.as_ptr();
+        self.red.post_launch_child();
+        unsafe {
+            execvpe(child_path, child_argv, child_envp);
+        }
+        panic!("execvpe failed.");
+    }
+
+    pub fn launch(&mut self) -> const_api::LaunchResult {
         let pre_launch_rc = self.red.prep_launch();
         if pre_launch_rc.is_err() {
             return pre_launch_rc;
@@ -86,36 +118,11 @@ impl Launcher {
         }
         if child_id == 0 {
             // is child process
-            let child_path: *const c_char;
-            let child_argv: *const *const c_char;
-            let child_envp: *const *const c_char;
-            let exec_str = self.executable.clone();
-            let ex1 = CString::new(exec_str).unwrap();
-            child_path = ex1.as_ptr();
-            let cstr_argv: Vec<_> = self.argv
-                .iter()
-                .map(|arg| CString::new(arg.as_str()).unwrap())
-                .collect();
-            let mut p_argv: Vec<_> = cstr_argv.iter().map(|arg| arg.as_ptr()).collect();
-            p_argv.push(std::ptr::null());
-            child_argv = p_argv.as_ptr();
-            let cstr_envp: Vec<_> = self.envp
-                .iter()
-                .map(|env| CString::new(env.as_str()).unwrap())
-                .collect();
-            let mut p_envp: Vec<_> = cstr_envp.iter().map(|env| env.as_ptr()).collect();
-            p_envp.push(std::ptr::null());
-            child_envp = p_envp.as_ptr();
-            self.red.post_launch_child();
-            unsafe {
-                execvpe(child_path, child_argv, child_envp);
-            }
-            panic!("execvpe failed.");
+            return self.launch_child();
         } else {
             self.launched_process_id = child_id;
             self.red.post_launch_pairent();
         }
-
 
         Ok(())
     }
