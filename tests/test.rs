@@ -10,10 +10,19 @@ use std::str;
 fn test_launch() {
     let foo = feaer::Launcher::new();
     let mut bar = foo.unwrap();
-    let pathname = String::from("/bin/ls");
+    let pathname = String::from("/bin/echo");
 
     let rc = bar.executable_set(&pathname);
     bar.argv.push(String::from("/bin/echo"));
+    bar.argv.push(String::from("/bin/echo"));
+    let rd1 = bar.redirect_set(1, None, Some(feaer::RedirectType::RedirectRead));
+    match rd1 {
+        Ok(_) => {}
+        Err(_) => {
+            assert!(false);
+        }
+    }
+
     match rc {
         Ok(_) => {}
         Err(_) => {
@@ -27,19 +36,39 @@ fn test_launch() {
             assert!(false);
         }
     }
-
-    let jon = bar.redirect_fd(0);
-    let redirect_file_id: c_int;
-    match jon {
-        Some(v) => {
-            redirect_file_id = v as c_int;
+    {
+        let mut redirect_file_id: File;
+        match bar.redirect_file(1) {
+            Some(v) => {
+                redirect_file_id = v;
+            }
+            None => {
+                assert!(false);
+                return;
+            }
         }
-        None => {
-            assert!(false);
+        let mut buf: [u8; 1024] = [0; 1024];
+        let readrc = redirect_file_id.read(&mut buf);
+        let read_bytes = match readrc {
+            Ok(v) => v,
+            Err(e) => {
+                panic!("Invalid read: {}", e);
+            }
+        };
+
+        if read_bytes == 0 {
+            println!("read_bytes={:?}", read_bytes);
             return;
         }
+        let s = match str::from_utf8(&buf[0..read_bytes]) {
+            Ok(v) => v,
+            Err(e) => panic!("Invalid UTF-8 sequence: {}", e),
+        };
+        let output = s.to_string();
+        let test_data = "/bin/echo\n".to_string();
+        assert!(output == test_data);
     }
-    let result = bar.wait();
+    let _result = bar.wait();
 }
 
 #[test]
