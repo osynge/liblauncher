@@ -1,4 +1,3 @@
-
 use const_api;
 use redirect::LauncherStructPipe;
 use libc::c_int;
@@ -6,15 +5,6 @@ use libc::c_int;
 pub struct RedirectContainer {
     pub(crate) redirect: Vec<LauncherStructPipe>,
 }
-
-
-
-
-
-
-
-
-
 
 impl RedirectContainer {
     pub fn new() -> RedirectContainer {
@@ -42,12 +32,9 @@ impl RedirectContainer {
         Ok(())
     }
 
-
     pub(crate) fn prep_launch(&mut self) -> const_api::LaunchResult {
         for mut fd in self.redirect.iter_mut() {
             let bill = fd.prep_launch();
-
-
         }
         Ok(())
     }
@@ -87,21 +74,25 @@ impl RedirectContainer {
         }
         Ok(())
     }
+
     pub(crate) fn redirect_fd(&mut self, child_fd: u32) -> Option<u32> {
         let usize_child_fd = child_fd as usize;
         if usize_child_fd >= self.redirect.len() {
             return None;
         }
-        match self.redirect.get(usize_child_fd) {
+        let foo: &mut LauncherStructPipe;
+        match self.redirect.get_mut(usize_child_fd) {
             Some(expr) => {
-                return expr.file_descriptor_pairent;
+                foo = expr;
             }
             None => {
                 return None;
             }
         }
+        return foo.redirect_fd();
     }
 }
+
 #[cfg(test)]
 mod tests {
     use super::*;
