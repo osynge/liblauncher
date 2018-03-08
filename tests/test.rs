@@ -1,6 +1,7 @@
 extern crate feaer;
 extern crate libc;
 use std::fs::File;
+use std::io::Write;
 use std::os::unix::io::FromRawFd;
 use libc::c_int;
 use std::io::Read;
@@ -15,13 +16,7 @@ fn test_launch() {
     let rc = bar.executable_set(&pathname);
     bar.argv.push(String::from("/bin/echo"));
     bar.argv.push(String::from("/bin/echo"));
-    let rd1 = bar.redirect_set(1, None, Some(feaer::RedirectType::RedirectRead));
-    match rd1 {
-        Ok(_) => {}
-        Err(_) => {
-            assert!(false);
-        }
-    }
+    let _ = bar.redirect_set(1, None, Some(feaer::RedirectType::RedirectRead));
 
     match rc {
         Ok(_) => {}
@@ -70,6 +65,85 @@ fn test_launch() {
     }
     let _result = bar.wait();
 }
+
+
+#[test]
+fn test_launch_cat() {
+    let foo = feaer::Launcher::new();
+    let mut bar = foo.unwrap();
+    let pathname = String::from("/bin/cat");
+
+    let _ = bar.executable_set(&pathname);
+    bar.argv.push(String::from("/bin/cat"));
+    let _ = bar.redirect_set(0, None, Some(feaer::RedirectType::RedirectWrite));
+    let _ = bar.redirect_set(1, None, Some(feaer::RedirectType::RedirectRead));
+    let rc = bar.launch();
+    match rc {
+        Ok(_) => {}
+        Err(_) => {
+            assert!(false);
+        }
+    }
+    {
+        let mut redirect_file_id: File;
+        match bar.redirect_file(0) {
+            Some(v) => {
+                redirect_file_id = v;
+            }
+            None => {
+                assert!(false);
+                return;
+            }
+        }
+        let readrc = redirect_file_id.write(b"hello\n");
+        let read_bytes = match readrc {
+            Ok(v) => v,
+            Err(e) => {
+                panic!("Invalid read: {}", e);
+            }
+        };
+
+        if read_bytes == 0 {
+            println!("read_bytes={:?}", read_bytes);
+            return;
+        }
+    }
+    {
+        let mut redirect_file_id: File;
+        match bar.redirect_file(1) {
+            Some(v) => {
+                redirect_file_id = v;
+            }
+            None => {
+                assert!(false);
+                return;
+            }
+        }
+        let mut buf: [u8; 1024] = [0; 1024];
+        let readrc = redirect_file_id.read(&mut buf);
+        let read_bytes = match readrc {
+            Ok(v) => v,
+            Err(e) => {
+                panic!("Invalid read: {}", e);
+            }
+        };
+
+        if read_bytes == 0 {
+            println!("read_bytes={:?}", read_bytes);
+            return;
+        }
+        let s = match str::from_utf8(&buf[0..read_bytes]) {
+            Ok(v) => v,
+            Err(e) => panic!("Invalid UTF-8 sequence: {}", e),
+        };
+        let output = s.to_string();
+        let test_data = "hello\n".to_string();
+        assert!(output == test_data);
+    }
+    let _result = bar.wait();
+}
+
+
 
 #[test]
 fn test_launch2() {
