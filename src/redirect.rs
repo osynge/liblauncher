@@ -1,11 +1,8 @@
 use libc::c_int;
-use libc::pipe;
-use libc::dup;
-use libc::dup2;
-use libc::close;
-use std::io::Error;
 
 use const_api;
+
+use wrap_posix;
 
 #[derive(Debug)]
 pub struct LauncherStructPipe {
@@ -23,53 +20,6 @@ pub enum LauncherStructPipeError {
     RedirectWrite,
     RedirectIgnore,
     RedirectMirror,
-}
-
-fn posix_close(file_num: c_int) -> Result<(), const_api::LauncherError> {
-    unsafe {
-        let rc: c_int;
-        rc = close(file_num);
-        if rc == 0 {
-            return Ok(());
-        }
-        let freed = Error::last_os_error();
-        println!("raw_os_error={:?}={:?}", file_num, freed);
-        return Ok(());
-    }
-}
-
-fn mkpipe() -> Result<(u32, u32), const_api::LauncherError> {
-    let mut pipeparam: [c_int; 2] = [-1, -1];
-    let pipe_rc: c_int;
-    unsafe { pipe_rc = pipe(pipeparam.as_mut_ptr()) }
-    if pipe_rc != 0 {
-        return Err(const_api::LauncherError::ExecutableNotFound);
-    }
-    let file_descriptor_read = pipeparam[0] as u32;
-    let file_descriptor_write = pipeparam[1] as u32;
-    Ok((file_descriptor_read, file_descriptor_write))
-}
-
-fn posix_dup(oldfd: c_int) -> Result<c_int, const_api::LauncherError> {
-    let dup2_rc: c_int;
-    unsafe {
-        dup2_rc = dup(oldfd);
-        if dup2_rc == -1 {
-            return Err(const_api::LauncherError::ExecutableNotFound);
-        }
-    }
-    Ok(dup2_rc)
-}
-
-fn posix_dup2(oldfd: c_int, newfd: c_int) -> Result<(), const_api::LauncherError> {
-    let dup2_rc: c_int;
-    unsafe {
-        dup2_rc = dup2(oldfd, newfd);
-        if dup2_rc == -1 {
-            return Err(const_api::LauncherError::ExecutableNotFound);
-        }
-    }
-    Ok(())
 }
 
 impl LauncherStructPipe {
@@ -124,7 +74,7 @@ impl LauncherStructPipe {
     }
 
     fn prep_launch_fifo(&mut self) -> Result<(), LauncherStructPipeError> {
-        let pipe_rc = mkpipe();
+        let pipe_rc = wrap_posix::mkpipe();
         let (file_descriptor_read, file_descriptor_write) = pipe_rc.unwrap();
         self.file_descriptor_read = Some(file_descriptor_read);
         self.file_descriptor_write = Some(file_descriptor_write);
@@ -140,7 +90,7 @@ impl LauncherStructPipe {
             }
         };
         let filedes_w = file_descriptor_read as c_int;
-        match posix_close(filedes_w) {
+        match wrap_posix::posix_close(filedes_w) {
             Ok(()) => {
                 self.file_descriptor_read = None;
             }
@@ -159,7 +109,7 @@ impl LauncherStructPipe {
             }
         };
         let filedes_w = file_descriptor_write as c_int;
-        match posix_close(filedes_w) {
+        match wrap_posix::posix_close(filedes_w) {
             Ok(()) => {
                 self.file_descriptor_write = None;
             }
@@ -178,7 +128,7 @@ impl LauncherStructPipe {
             }
         };
         let filedes_w = file_descriptor_child as c_int;
-        match posix_close(filedes_w) {
+        match wrap_posix::posix_close(filedes_w) {
             Ok(()) => {
                 self.file_descriptor_child = None;
             }
@@ -197,7 +147,7 @@ impl LauncherStructPipe {
             }
         };
         let filedes_w = file_descriptor_pairent as c_int;
-        match posix_close(filedes_w) {
+        match wrap_posix::posix_close(filedes_w) {
             Ok(()) => {
                 self.file_descriptor_pairent = None;
             }
@@ -232,7 +182,7 @@ impl LauncherStructPipe {
         if filedes_w == filedes_c {
             ()
         }
-        let posix_dup_rc = posix_dup(filedes_w);
+        let posix_dup_rc = wrap_posix::posix_dup(filedes_w);
         match posix_dup_rc {
             Ok(n) => {
                 self.file_descriptor_write = Some(n as u32);
@@ -283,7 +233,7 @@ impl LauncherStructPipe {
     fn post_launch_child_redirect_read(&mut self) -> Result<(), LauncherStructPipeError> {
         let filedes_w = self.file_descriptor_write.unwrap() as c_int;
         let filedes_r = self.file_descriptor_child.unwrap() as c_int;
-        let foo = posix_dup2(filedes_w, filedes_r);
+        let foo = wrap_posix::posix_dup2(filedes_w, filedes_r);
         match foo {
             Ok(()) => {}
             Err(_) => {
@@ -302,7 +252,7 @@ impl LauncherStructPipe {
     fn post_launch_child_redirect_write(&mut self) -> Result<(), LauncherStructPipeError> {
         let filedes_w = self.file_descriptor_read.unwrap() as c_int;
         let filedes_c = self.file_descriptor_child.unwrap() as c_int;
-        let foo = posix_dup2(filedes_w, filedes_c);
+        let foo = wrap_posix::posix_dup2(filedes_w, filedes_c);
         match foo {
             Ok(()) => {}
             Err(_) => {
@@ -343,7 +293,7 @@ impl LauncherStructPipe {
                 return Err(LauncherStructPipeError::Unknown);
             }
         }
-        let posix_dup_rc = posix_dup2(filedes_j, filedes_c);
+        let posix_dup_rc = wrap_posix::posix_dup2(filedes_j, filedes_c);
         match posix_dup_rc {
             Ok(()) => {}
             Err(_) => {

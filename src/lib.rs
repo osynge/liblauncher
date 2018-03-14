@@ -1,5 +1,6 @@
 extern crate libc;
 
+mod wrap_posix;
 mod redirect;
 mod const_api;
 mod feaer;
