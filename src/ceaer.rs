@@ -15,6 +15,7 @@ use std::fs::File;
 use std::ffi::CString;
 
 use redirect_map;
+use redirect_map_factory;
 use const_api;
 
 #[derive(Debug)]
@@ -23,7 +24,7 @@ pub struct Ceaer {
     pub argv: Vec<String>,
     pub envp: Vec<String>,
     pub return_code: i32,
-    red: redirect_map::RedirectMapFactory,
+    red: redirect_map_factory::RedirectMapFactory,
 }
 
 #[derive(Debug)]
@@ -43,7 +44,7 @@ impl Ceaer {
             argv: Vec::new(),
             envp: Vec::new(),
             return_code: -1,
-            red: redirect_map::RedirectMapFactory::new()?,
+            red: redirect_map_factory::RedirectMapFactory::new().unwrap(),
         })
     }
 
@@ -107,11 +108,9 @@ impl Ceaer {
     }
 
     pub fn launch(&mut self) -> Result<Process, const_api::LauncherError> {
-        let mut bill: redirect_map::RedirectMapContainer;
-        match self.red.generate_container() {
-            Ok(c) => {
-                bill = c;
-            }
+        let mut bill = redirect_map::RedirectMapContainer::new().unwrap();
+        match self.red.update_map_container(&mut bill) {
+            Ok(_) => {}
             Err(_) => {
                 return Err(const_api::LauncherError::LaunchPrepError);
             }
@@ -133,16 +132,15 @@ impl Ceaer {
         };
         if child_id == 0 {
             // is child process
-            bill.post_launch_child();
-            self._wrapped_execvpe();
+            let _ = bill.post_launch_child();
+            let _ = self._wrapped_execvpe();
         } else {
-            bill.post_launch_pairent();
+            let _ = bill.post_launch_pairent();
         }
-        println!("gothere={:?}=result", child_id);
         let red = redirect_map::RedirectMapContainer::new();
 
         match red {
-            Ok(c) => {}
+            Ok(_) => {}
             Err(_) => return Err(const_api::LauncherError::ForkError),
         };
         let output = Process {

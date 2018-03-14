@@ -3,6 +3,8 @@ use std::collections::HashMap;
 
 use redirect_factory;
 
+use redirect_process;
+
 #[derive(Debug)]
 pub struct RedirectMapFactory {
     pub(crate) redirect: HashMap<u32, redirect_factory::RedirectFactory>,
@@ -10,7 +12,7 @@ pub struct RedirectMapFactory {
 
 #[derive(Debug)]
 pub struct RedirectMapContainer {
-    pub(crate) redirect: HashMap<u32, redirect_factory::RedirectProcess>,
+    pub(crate) redirect: HashMap<u32, redirect_process::RedirectProcess>,
 }
 
 impl RedirectMapFactory {
@@ -60,7 +62,7 @@ impl RedirectMapContainer {
     }
 
     pub(crate) fn redirect_fd(&mut self, child_fd: u32) -> Option<u32> {
-        let foo: &mut redirect_factory::RedirectProcess;
+        let foo: &mut redirect_process::RedirectProcess;
         match self.redirect.get_mut(&child_fd) {
             Some(expr) => {
                 foo = expr;
