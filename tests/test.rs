@@ -66,7 +66,6 @@ fn test_launch() {
     let _result = bar.wait();
 }
 
-
 #[test]
 fn test_launch_cat() {
     let foo = feaer::Launcher::new();
@@ -142,8 +141,6 @@ fn test_launch_cat() {
     }
     let _result = bar.wait();
 }
-
-
 
 #[test]
 fn test_launch2() {
