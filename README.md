@@ -1,8 +1,8 @@
-This code is not yet production grade
+This code does not yet have a stable api.
 
-Possible rename to libfeaer
+Possible rename to libceaer
 
-Fork
+Clone
 Exec
 Avguments
 Enviroment
