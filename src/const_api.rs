@@ -6,13 +6,15 @@ pub enum LauncherError {
     ForkError,
     InvalidChildFd,
     InvalidRedirectPairentFd,
+    LaunchPrepError,
+    Unknown,
 }
 
 pub type LaunchResult = Result<(), LauncherError>;
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum RedirectType {
-    RedirectRead = 0,
+    RedirectRead,
     RedirectWrite,
     RedirectIgnore,
     RedirectMirror,
