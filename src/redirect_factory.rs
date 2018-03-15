@@ -18,7 +18,9 @@ impl RedirectFactory {
         })
     }
 
-    pub fn generate_process(&mut self) -> Result<redirect_process::RedirectProcess, const_api::LauncherError> {
+    pub fn generate_process(
+        &mut self,
+    ) -> Result<redirect_process::RedirectProcess, const_api::LauncherError> {
         let bill = redirect_process::RedirectProcess {
             file_descriptor_read: None,
             file_descriptor_write: None,
