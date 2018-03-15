@@ -293,3 +293,83 @@ fn test_launch_with_4() {
     let test_data = "one two\n".to_string();
     assert!(output == test_data);
 }
+
+
+
+#[test]
+fn test_launch_cat_stdin_stdout_kill() {
+    let foo = feaer::Ceaer::new();
+    let mut bar = foo.unwrap();
+    let pathname = String::from("/usr/bin/yes");
+    let tmp_path = Path::new(&pathname);
+    let _ = bar.executable_set(&tmp_path);
+    bar.argv.push(String::from("/usr/bin/yes"));
+    let _ = bar.redirect_set(0, None, Some(feaer::RedirectType::RedirectWrite));
+    let _ = bar.redirect_set(1, None, Some(feaer::RedirectType::RedirectRead));
+    let mut process: feaer::Process;
+    let rc = bar.launch();
+    match rc {
+        Ok(j) => process = j,
+        Err(_) => {
+            assert!(false);
+            return;
+        }
+    };
+    {
+        let mut redirect_file_id: File;
+        match process.redirect_file(0) {
+            Some(v) => {
+                redirect_file_id = v;
+            }
+            None => {
+                assert!(false);
+                return;
+            }
+        }
+        let readrc = redirect_file_id.write(b"hello\n");
+        let read_bytes = match readrc {
+            Ok(v) => v,
+            Err(e) => {
+                panic!("Invalid read: {}", e);
+            }
+        };
+
+        if read_bytes == 0 {
+            println!("read_bytes={:?}", read_bytes);
+            return;
+        }
+    }
+    {
+        let mut redirect_file_id: File;
+        match process.redirect_file(1) {
+            Some(v) => {
+                redirect_file_id = v;
+            }
+            None => {
+                assert!(false);
+                return;
+            }
+        }
+        let mut buf: [u8; 1024] = [0; 1024];
+        let readrc = redirect_file_id.read(&mut buf);
+        let read_bytes = match readrc {
+            Ok(v) => v,
+            Err(e) => {
+                panic!("Invalid read: {}", e);
+            }
+        };
+
+        if read_bytes == 0 {
+            println!("read_bytes={:?}", read_bytes);
+            return;
+        }
+        let s = match str::from_utf8(&buf[0..read_bytes]) {
+            Ok(v) => v,
+            Err(e) => panic!("Invalid UTF-8 sequence: {}", e),
+        };
+        let output = s.to_string();
+        let test_data = "hello\n".to_string();
+        assert!(output == test_data);
+    }
+    let _result = process.signal(1);
+}
