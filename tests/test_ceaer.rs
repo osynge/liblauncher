@@ -194,7 +194,7 @@ fn test_ceaer_launch2() {
     };
     let result = process.wait();
     match result {
-        Ok(_) => {},
+        Ok(_) => {}
         Err(_) => {
             assert!(false);
             return;
