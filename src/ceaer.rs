@@ -127,12 +127,6 @@ impl Ceaer {
         } else {
             let _ = bill.post_launch_pairent();
         }
-        let red = redirect_map::RedirectMapContainer::new();
-
-        match red {
-            Ok(_) => {}
-            Err(_) => return Err(const_api::LauncherError::ForkError),
-        };
         let output = process::Process {
             executable: self.executable.clone(),
             argv: self.argv.clone(),
