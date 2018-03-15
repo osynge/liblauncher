@@ -1,17 +1,12 @@
 use std;
 use libc::c_char;
-use libc::c_int;
 use libc::execvpe;
 use libc::fork;
 use libc::pid_t;
-use libc::waitpid;
-use libc::WNOHANG;
 use std::result::Result;
 use std::path::Path;
 use std::os::unix::fs::PermissionsExt;
 
-use std::os::unix::io::FromRawFd;
-use std::fs::File;
 use std::ffi::CString;
 
 use redirect_map;
