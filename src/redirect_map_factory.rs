@@ -47,3 +47,147 @@ impl RedirectMapFactory {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use libc::c_int;
+
+    #[test]
+    fn has_stdio_precreated() {
+        let rc = RedirectMapFactory::new().unwrap();
+        let redirects = rc.redirect.len();
+        if redirects != 0 {
+            assert!(false);
+        }
+    }
+
+    #[test]
+    fn redirect_map_factory_can_create_redirects() {
+        let mut rc = RedirectMapFactory::new().unwrap();
+        match rc.redirect.get(&0) {
+            Some(v) => {
+                assert!(false);
+            }
+            None => {}
+        }
+        let rd1 = rc.redirect_set(0, None, Some(const_api::RedirectType::RedirectRead));
+        match rd1 {
+            Ok(_) => {}
+            Err(_) => {
+                assert!(false);
+            }
+        }
+        match rc.redirect.get(&0) {
+            Some(v) => {}
+            None => {
+                assert!(false);
+            }
+        }
+    }
+
+    #[test]
+    fn redirect_map_factory_can_generate_container() {
+        let mut rc = RedirectMapFactory::new().unwrap();
+        match rc.redirect.get(&0) {
+            Some(v) => {
+                assert!(false);
+            }
+            None => {}
+        }
+        let rd1 = rc.redirect_set(0, None, Some(const_api::RedirectType::RedirectRead));
+        match rd1 {
+            Ok(_) => {}
+            Err(_) => {
+                assert!(false);
+            }
+        }
+        match rc.redirect.get(&0) {
+            Some(v) => {}
+            None => {
+                assert!(false);
+            }
+        }
+        let mut bill = redirect_map::RedirectMapContainer::new();
+        match rc.update_map_container(&mut bill) {
+            Ok(v) => {}
+            Err(_) => {
+                assert!(false);
+                return;
+            }
+        };
+        match bill.redirect.get(&0) {
+            Some(v) => {}
+            None => {
+                assert!(false);
+            }
+        }
+    }
+
+    #[test]
+    fn RedirectMapContainer_can_prep_launch() {
+        let mut rc = RedirectMapFactory::new().unwrap();
+        match rc.redirect.get(&0) {
+            Some(v) => {
+                assert!(false);
+            }
+            None => {}
+        }
+        let rd1 = rc.redirect_set(0, None, Some(const_api::RedirectType::RedirectRead));
+        match rd1 {
+            Ok(_) => {}
+            Err(_) => {
+                assert!(false);
+            }
+        }
+        match rc.redirect.get(&0) {
+            Some(v) => {}
+            None => {
+                assert!(false);
+            }
+        }
+        let mut bill = redirect_map::RedirectMapContainer::new();
+        match rc.update_map_container(&mut bill) {
+            Ok(v) => {}
+            Err(_) => {
+                assert!(false);
+                return;
+            }
+        };
+        match bill.redirect.get(&0) {
+            Some(v) => {}
+            None => {
+                assert!(false);
+            }
+        };
+        match bill.prep_launch() {
+            Ok(v) => {}
+            Err(_) => {
+                assert!(false);
+            }
+        };
+        let mut redirect_type = None;
+
+        match bill.redirect.get(&0) {
+            Some(v) => {
+                redirect_type = v.redirect;
+            }
+            None => {
+                assert!(false);
+            }
+        };
+        let mut p: const_api::RedirectType;
+        match redirect_type {
+            Some(v) => {
+                p = v;
+            }
+            None => {
+                assert!(false);
+                return;
+            }
+        };
+        if p != const_api::RedirectType::RedirectRead {
+            assert!(false);
+        }
+    }
+}
