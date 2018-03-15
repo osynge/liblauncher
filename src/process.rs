@@ -1,9 +1,5 @@
-use libc::waitpid;
-use libc::WNOHANG;
-
+use wrap_posix;
 use libc::pid_t;
-
-use libc::c_int;
 
 use std::os::unix::io::FromRawFd;
 use std::fs::File;
@@ -43,24 +39,23 @@ impl Process {
         }
         return Some(bill);
     }
+
     pub fn wait(&mut self) -> Result<(), i32> {
-        let rc: pid_t;
-        let mut status = 0 as c_int;
-        let options = WNOHANG as c_int;
         if self.launched_process_id == -1 {
             return Err(-1);
         }
-        unsafe {
-            rc = waitpid(self.launched_process_id, &mut status as *mut c_int, options);
-        }
-        if rc == -1 {
-            println!("waitpid failed!");
-            return Err(-3);
-        }
-        if rc == self.launched_process_id {
-            self.return_code = status;
-            return Ok(());
-        }
-        return Ok(());
+        match wrap_posix::wait(self.launched_process_id) {
+            Ok(j) => {
+                self.return_code = j;
+                return Ok(());
+            }
+            Err(j) => {
+                if j == -4 {
+                    return Ok(());
+                } else {
+                    return Err(j);
+                }
+            }
+        };
     }
 }

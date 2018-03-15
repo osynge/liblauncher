@@ -4,6 +4,9 @@ use libc::dup;
 use libc::dup2;
 use libc::close;
 use std::io::Error;
+use libc::pid_t;
+use libc::waitpid;
+use libc::WNOHANG;
 
 use const_api;
 
@@ -52,4 +55,25 @@ pub(crate) fn posix_dup2(oldfd: c_int, newfd: c_int) -> Result<(), const_api::La
         }
     }
     Ok(())
+}
+
+pub(crate) fn wait(launched_process_id: pid_t) -> Result<i32, i32> {
+    let rc: pid_t;
+    let mut status = 0 as c_int;
+    let options = WNOHANG as c_int;
+    if launched_process_id == -1 {
+        return Err(-1);
+    }
+    unsafe {
+        rc = waitpid(launched_process_id, &mut status as *mut c_int, options);
+    }
+    if rc == -1 {
+        println!("waitpid failed!");
+        return Err(-3);
+    }
+    if rc == launched_process_id {
+        return Ok(status);
+    } else {
+        return Err(-4);
+    }
 }
