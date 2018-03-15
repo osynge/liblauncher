@@ -6,6 +6,7 @@ use libc::close;
 use std::io::Error;
 use libc::pid_t;
 use libc::waitpid;
+use libc::kill;
 use libc::WNOHANG;
 
 use const_api;
@@ -73,6 +74,28 @@ pub(crate) fn wait(launched_process_id: pid_t) -> Result<i32, i32> {
     }
     if rc == launched_process_id {
         return Ok(status);
+    } else {
+        return Err(-4);
+    }
+}
+
+
+pub(crate) fn kill_process(launched_process_id: pid_t, signal : u32) -> Result<i32, i32> {
+    let rc: c_int;
+    let signal_as = signal as c_int;
+    if signal_as < 0 {
+        return Err(-5);
+    }
+
+    unsafe {
+        rc = kill(launched_process_id, 1 );
+    }
+    if rc == -1 {
+        println!("waitpid failed!");
+        return Err(-3);
+    }
+    if rc == 0 {
+        return Ok(0);
     } else {
         return Err(-4);
     }
