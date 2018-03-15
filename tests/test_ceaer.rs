@@ -6,14 +6,15 @@ use std::os::unix::io::FromRawFd;
 use libc::c_int;
 use std::io::Read;
 use std::str;
+use std::path::Path;
 
 #[test]
 fn test_launch_echo() {
     let foo = feaer::Ceaer::new();
     let mut bar = foo.unwrap();
     let pathname = String::from("/bin/echo");
-
-    let rc = bar.executable_set(&pathname);
+    let tmp_path = Path::new(&pathname);
+    let rc = bar.executable_set(&tmp_path);
     bar.argv.push(String::from("/bin/echo"));
     bar.argv.push(String::from("lovely"));
     bar.argv.push(String::from("jovely"));
@@ -74,8 +75,8 @@ fn test_launch_cat_stdin_stdout() {
     let foo = feaer::Ceaer::new();
     let mut bar = foo.unwrap();
     let pathname = String::from("/bin/cat");
-
-    let _ = bar.executable_set(&pathname);
+    let tmp_path = Path::new(&pathname);
+    let rc = bar.executable_set(&tmp_path);
     bar.argv.push(String::from("/bin/cat"));
     let _ = bar.redirect_set(0, None, Some(feaer::RedirectType::RedirectWrite));
     let _ = bar.redirect_set(1, None, Some(feaer::RedirectType::RedirectRead));
@@ -152,7 +153,8 @@ fn test_ceaer_launch2() {
     let foo = feaer::Ceaer::new();
     let mut bar = foo.unwrap();
     let pathname = String::from("/bin/echo");
-    let rc = bar.executable_set(&pathname);
+    let tmp_path = Path::new(&pathname);
+    let rc = bar.executable_set(&tmp_path);
     bar.argv.push(String::from("/bin/echo"));
     bar.argv.push(String::from("test_launch2"));
     match rc {
@@ -207,7 +209,8 @@ fn test_launch_with_4() {
     let foo = feaer::Ceaer::new();
     let mut bar = foo.unwrap();
     let pathname = String::from("/bin/echo");
-    let rc = bar.executable_set(&pathname);
+    let tmp_path = Path::new(&pathname);
+    let rc = bar.executable_set(&tmp_path);
     bar.argv.push(String::from("/bin/echo"));
     bar.argv.push(String::from("one"));
     bar.argv.push(String::from("two"));
