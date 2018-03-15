@@ -17,6 +17,7 @@ use std::ffi::CString;
 use redirect_map;
 use redirect_map_factory;
 use const_api;
+use process;
 
 #[derive(Debug)]
 pub struct Ceaer {
@@ -25,16 +26,6 @@ pub struct Ceaer {
     pub envp: Vec<String>,
     pub return_code: i32,
     red: redirect_map_factory::RedirectMapFactory,
-}
-
-#[derive(Debug)]
-pub struct Process {
-    pub launched_process_id: pid_t,
-    pub executable: String,
-    pub argv: Vec<String>,
-    pub envp: Vec<String>,
-    pub return_code: i32,
-    red: redirect_map::RedirectMapContainer,
 }
 
 impl Ceaer {
@@ -79,8 +70,7 @@ impl Ceaer {
         let perms = md.permissions();
         Ok(())
     }
-
-    fn _wrapped_execvpe(&mut self) -> Result<Process, ()> {
+    fn _wrapped_execvpe(&mut self) -> Result<process::Process, ()> {
         let child_path: *const c_char;
         let child_argv: *const *const c_char;
         let child_envp: *const *const c_char;
@@ -107,7 +97,7 @@ impl Ceaer {
         panic!("execvpe failed.");
     }
 
-    pub fn launch(&mut self) -> Result<Process, const_api::LauncherError> {
+    pub fn launch(&mut self) -> Result<process::Process, const_api::LauncherError> {
         let mut bill = redirect_map::RedirectMapContainer::new().unwrap();
         match self.red.update_map_container(&mut bill) {
             Ok(_) => {}
@@ -143,7 +133,7 @@ impl Ceaer {
             Ok(_) => {}
             Err(_) => return Err(const_api::LauncherError::ForkError),
         };
-        let output = Process {
+        let output = process::Process {
             executable: self.executable.clone(),
             argv: self.argv.clone(),
             envp: self.envp.clone(),
@@ -152,50 +142,5 @@ impl Ceaer {
             launched_process_id: child_id,
         };
         Ok(output)
-    }
-}
-
-impl Process {
-    pub fn redirect_fd(&mut self, child_fd: u32) -> Option<u32> {
-        self.red.redirect_fd(child_fd)
-    }
-
-    pub fn redirect_file(&mut self, child_fd: u32) -> Option<File> {
-        let redirect_fd: u32;
-        match self.red.redirect_fd(child_fd) {
-            Some(redirect_fd_rc) => {
-                redirect_fd = redirect_fd_rc;
-            }
-            None => {
-                println!("redirect_file failed!{:?}", child_fd);
-                return None;
-            }
-        }
-        let bill: File;
-        unsafe {
-            let make_file = File::from_raw_fd(redirect_fd as i32);
-            bill = make_file;
-        }
-        return Some(bill);
-    }
-    pub fn wait(&mut self) -> Result<(), i32> {
-        let rc: pid_t;
-        let mut status = 0 as c_int;
-        let options = WNOHANG as c_int;
-        if self.launched_process_id == -1 {
-            return Err(-1);
-        }
-        unsafe {
-            rc = waitpid(self.launched_process_id, &mut status as *mut c_int, options);
-        }
-        if rc == -1 {
-            println!("waitpid failed!");
-            return Err(-3);
-        }
-        if rc == self.launched_process_id {
-            self.return_code = status;
-            return Ok(());
-        }
-        return Ok(());
     }
 }
