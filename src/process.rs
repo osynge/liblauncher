@@ -58,4 +58,19 @@ impl Process {
             }
         };
     }
+
+    pub fn signal(&mut self, signal : u32) -> Result<(), i32> {
+        if self.launched_process_id == -1 {
+            return Err(-1);
+        };
+        let rc =  wrap_posix::kill_process(self.launched_process_id, signal);
+        match rc {
+            Ok(_) => {
+                return Ok(());
+            }
+            Err(j) => {
+                return Err(j);
+            }
+        };
+    }
 }
