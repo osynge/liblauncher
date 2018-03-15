@@ -10,10 +10,10 @@ pub struct RedirectMapContainer {
 }
 
 impl RedirectMapContainer {
-    pub fn new() -> Result<RedirectMapContainer, String> {
-        Ok(RedirectMapContainer {
+    pub fn new() -> RedirectMapContainer {
+        RedirectMapContainer {
             redirect: HashMap::new(),
-        })
+        }
     }
 
     pub(crate) fn redirect_fd(&mut self, child_fd: u32) -> Option<u32> {
