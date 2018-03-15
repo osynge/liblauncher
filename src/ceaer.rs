@@ -98,7 +98,7 @@ impl Ceaer {
     }
 
     pub fn launch(&mut self) -> Result<process::Process, const_api::LauncherError> {
-        let mut bill = redirect_map::RedirectMapContainer::new().unwrap();
+        let mut bill = redirect_map::RedirectMapContainer::new();
         match self.red.update_map_container(&mut bill) {
             Ok(_) => {}
             Err(_) => {
