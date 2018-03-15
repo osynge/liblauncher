@@ -34,8 +34,8 @@ impl Ceaer {
         })
     }
 
-    pub fn executable_set(&mut self, path: &str) -> const_api::LaunchResult {
-        self.executable = String::from(path);
+    pub fn executable_set(&mut self, path: &std::path::Path) -> const_api::LaunchResult {
+        self.executable = String::from(path.to_str().unwrap());
         Ok(())
     }
 
