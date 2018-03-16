@@ -8,11 +8,11 @@ use redirect_map;
 
 #[derive(Debug)]
 pub struct Process {
-    pub launched_process_id: pid_t,
-    pub executable: String,
-    pub argv: Vec<String>,
-    pub envp: Vec<String>,
-    pub return_code: i32,
+    pub(crate) launched_process_id: pid_t,
+    pub(crate) executable: String,
+    pub(crate) argv: Vec<String>,
+    pub(crate) envp: Vec<String>,
+    pub(crate) return_code: i32,
     pub(crate) red: redirect_map::RedirectMapContainer,
 }
 
