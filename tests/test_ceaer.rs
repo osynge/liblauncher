@@ -3,7 +3,6 @@ extern crate libc;
 use std::fs::File;
 use std::io::Write;
 use std::os::unix::io::FromRawFd;
-use libc::c_int;
 use std::io::Read;
 use std::str;
 use std::path::Path;
@@ -76,7 +75,7 @@ fn test_launch_cat_stdin_stdout() {
     let mut bar = foo.unwrap();
     let pathname = String::from("/bin/cat");
     let tmp_path = Path::new(&pathname);
-    let rc = bar.executable_set(&tmp_path);
+    let _ = bar.executable_set(&tmp_path);
     bar.argv.push(String::from("/bin/cat"));
     let _ = bar.redirect_set(0, None, Some(feaer::RedirectType::RedirectWrite));
     let _ = bar.redirect_set(1, None, Some(feaer::RedirectType::RedirectRead));
@@ -358,18 +357,7 @@ fn test_launch_cat_stdin_stdout_kill() {
                 panic!("Invalid read: {}", e);
             }
         };
-
-        if read_bytes == 0 {
-            println!("read_bytes={:?}", read_bytes);
-            return;
-        }
-        let s = match str::from_utf8(&buf[0..read_bytes]) {
-            Ok(v) => v,
-            Err(e) => panic!("Invalid UTF-8 sequence: {}", e),
-        };
-        let output = s.to_string();
-        let test_data = "hello\n".to_string();
-        assert!(output == test_data);
+        assert!(read_bytes > 0);
     }
     let _result = process.signal(1);
 }
