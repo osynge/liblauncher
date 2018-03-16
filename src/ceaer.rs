@@ -16,10 +16,10 @@ use process;
 
 #[derive(Debug)]
 pub struct Ceaer {
-    pub executable: String,
+    executable: String,
     pub argv: Vec<String>,
-    pub envp: Vec<String>,
-    pub return_code: i32,
+    envp: Vec<String>,
+    return_code: i32,
     red: redirect_map_factory::RedirectMapFactory,
 }
 
