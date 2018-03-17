@@ -6,6 +6,7 @@ use libc::pid_t;
 use std::result::Result;
 use std::path::Path;
 use std::os::unix::fs::PermissionsExt;
+use std::ffi::OsStr;
 
 use std::ffi::CString;
 
@@ -17,7 +18,7 @@ use process;
 #[derive(Debug)]
 pub struct Ceaer {
     executable: String,
-    pub argv: Vec<String>,
+    argv: Vec<String>,
     envp: Vec<String>,
     return_code: i32,
     red: redirect_map_factory::RedirectMapFactory,
@@ -37,6 +38,18 @@ impl Ceaer {
     pub fn executable_set(&mut self, path: &std::path::Path) -> const_api::LaunchResult {
         self.executable = String::from(path.to_str().unwrap());
         Ok(())
+    }
+
+    pub fn arg<S: AsRef<OsStr>>(&mut self, arg: S) -> &mut Ceaer{
+        let bill =  arg.as_ref();
+        match bill.to_str() {
+            Some (j) => {
+                self.argv.push(String::from(j));
+            }
+            None => {
+            }
+        }
+        self
     }
 
     pub fn redirect_set(
