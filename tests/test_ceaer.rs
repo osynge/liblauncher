@@ -14,9 +14,9 @@ fn test_launch_echo() {
     let pathname = String::from("/bin/echo");
     let tmp_path = Path::new(&pathname);
     let rc = bar.executable_set(&tmp_path);
-    bar.argv.push(String::from("/bin/echo"));
-    bar.argv.push(String::from("lovely"));
-    bar.argv.push(String::from("jovely"));
+    bar.arg("/bin/echo");
+    bar.arg("lovely");
+    bar.arg("jovely");
     let _ = bar.redirect_set(1, None, Some(feaer::RedirectType::RedirectRead));
 
     match rc {
@@ -76,7 +76,7 @@ fn test_launch_cat_stdin_stdout() {
     let pathname = String::from("/bin/cat");
     let tmp_path = Path::new(&pathname);
     let _ = bar.executable_set(&tmp_path);
-    bar.argv.push(String::from("/bin/cat"));
+    bar.arg("/bin/cat");
     let _ = bar.redirect_set(0, None, Some(feaer::RedirectType::RedirectWrite));
     let _ = bar.redirect_set(1, None, Some(feaer::RedirectType::RedirectRead));
     let mut process: feaer::Process;
@@ -154,8 +154,8 @@ fn test_ceaer_launch2() {
     let pathname = String::from("/bin/echo");
     let tmp_path = Path::new(&pathname);
     let rc = bar.executable_set(&tmp_path);
-    bar.argv.push(String::from("/bin/echo"));
-    bar.argv.push(String::from("test_launch2"));
+    bar.arg("/bin/echo");
+    bar.arg("test_launch2");
     match rc {
         Ok(_) => {}
         Err(_) => {
@@ -210,9 +210,9 @@ fn test_launch_with_4() {
     let pathname = String::from("/bin/echo");
     let tmp_path = Path::new(&pathname);
     let rc = bar.executable_set(&tmp_path);
-    bar.argv.push(String::from("/bin/echo"));
-    bar.argv.push(String::from("one"));
-    bar.argv.push(String::from("two"));
+    bar.arg("/bin/echo");
+    bar.arg("one");
+    bar.arg("two");
     match rc {
         Ok(_) => {}
         Err(_) => {
@@ -302,7 +302,7 @@ fn test_launch_cat_stdin_stdout_kill() {
     let pathname = String::from("/usr/bin/yes");
     let tmp_path = Path::new(&pathname);
     let _ = bar.executable_set(&tmp_path);
-    bar.argv.push(String::from("/usr/bin/yes"));
+    bar.arg("/usr/bin/yes");
     let _ = bar.redirect_set(0, None, Some(feaer::RedirectType::RedirectWrite));
     let _ = bar.redirect_set(1, None, Some(feaer::RedirectType::RedirectRead));
     let mut process: feaer::Process;
