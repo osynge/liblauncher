@@ -47,6 +47,11 @@ impl Ceaer {
         self
     }
 
+    pub fn arg_clear(&mut self) -> &mut Ceaer{
+        self.argv.clear();
+        self
+    }
+
     pub fn redirect_set(
         &mut self,
         child_fd: u32,
