@@ -1,7 +1,7 @@
 use std;
+use wrap_posix;
 use libc::c_char;
 use libc::execvpe;
-use libc::fork;
 use libc::pid_t;
 use std::result::Result;
 use std::path::Path;
@@ -119,14 +119,12 @@ impl Ceaer {
             }
         }
         let child_id: pid_t;
-        unsafe {
-            let launched_process_id = fork();
-
-            if launched_process_id < 0 {
+        match wrap_posix::fork_process() {
+            Ok(j) => child_id = j,
+            Err(_) => {
                 return Err(const_api::LauncherError::ForkError);
             }
-            child_id = launched_process_id;
-        };
+        }
         if child_id == 0 {
             // is child process
             let _ = bill.post_launch_child();
