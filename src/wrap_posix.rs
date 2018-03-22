@@ -1,3 +1,4 @@
+use std;
 use libc::c_int;
 use libc::pipe;
 use libc::dup;
@@ -9,9 +10,11 @@ use libc::waitpid;
 use libc::kill;
 use libc::fork;
 use libc::WNOHANG;
-
+use libc::c_char;
+use libc::execvpe;
 use const_api;
 
+use std::ffi::CString;
 use ceaer::Ceaer;
 
 use process;
@@ -118,4 +121,33 @@ pub(crate) fn fork_process() -> Result<pid_t, ()> {
         }
     }
     Ok(child_id)
+}
+
+pub(crate) fn wrapped_execvpe(
+    executable: &String,
+    argv: &Vec<String>,
+    envp: &Vec<String>,
+) -> Result<process::Process, ()> {
+    let child_path: *const c_char;
+    let child_argv: *const *const c_char;
+    let child_envp: *const *const c_char;
+    let exec_str = executable.clone();
+    let ex1 = CString::new(exec_str).unwrap();
+    child_path = ex1.as_ptr();
+    let cstr_argv: Vec<_> = argv.iter()
+        .map(|arg| CString::new(arg.as_str()).unwrap())
+        .collect();
+    let mut p_argv: Vec<_> = cstr_argv.iter().map(|arg| arg.as_ptr()).collect();
+    p_argv.push(std::ptr::null());
+    child_argv = p_argv.as_ptr();
+    let cstr_envp: Vec<_> = envp.iter()
+        .map(|env| CString::new(env.as_str()).unwrap())
+        .collect();
+    let mut p_envp: Vec<_> = cstr_envp.iter().map(|env| env.as_ptr()).collect();
+    p_envp.push(std::ptr::null());
+    child_envp = p_envp.as_ptr();
+    unsafe {
+        execvpe(child_path, child_argv, child_envp);
+    }
+    panic!("execvpe failed.");
 }
