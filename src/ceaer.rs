@@ -47,7 +47,7 @@ impl Ceaer {
         self
     }
 
-    pub fn arg_clear(&mut self) -> &mut Ceaer{
+    pub fn arg_clear(&mut self) -> &mut Ceaer {
         self.argv.clear();
         self
     }
