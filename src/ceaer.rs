@@ -40,14 +40,13 @@ impl Ceaer {
         Ok(())
     }
 
-    pub fn arg<S: AsRef<OsStr>>(&mut self, arg: S) -> &mut Ceaer{
-        let bill =  arg.as_ref();
+    pub fn arg<S: AsRef<OsStr>>(&mut self, arg: S) -> &mut Ceaer {
+        let bill = arg.as_ref();
         match bill.to_str() {
-            Some (j) => {
+            Some(j) => {
                 self.argv.push(String::from(j));
             }
-            None => {
-            }
+            None => {}
         }
         self
     }
