@@ -127,7 +127,7 @@ pub(crate) fn wrapped_execvpe(
     executable: &String,
     argv: &Vec<String>,
     envp: &Vec<String>,
-) -> Result<process::Process, ()> {
+) -> Result<(), ()> {
     let child_path: *const c_char;
     let child_argv: *const *const c_char;
     let child_envp: *const *const c_char;
