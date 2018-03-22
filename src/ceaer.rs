@@ -79,10 +79,6 @@ impl Ceaer {
         Ok(())
     }
 
-    fn _wrapped_execvpe(&mut self) -> Result<process::Process, ()> {
-        wrap_posix::wrapped_execvpe(&self.executable, &self.argv, &self.envp)
-    }
-
     pub fn launch(&mut self) -> Result<process::Process, const_api::LauncherError> {
         let mut bill = redirect_map::RedirectMapContainer::new();
         match self.red.update_map_container(&mut bill) {
@@ -107,11 +103,10 @@ impl Ceaer {
         if child_id == 0 {
             // is child process
             let _ = bill.post_launch_child();
-            let _ = self._wrapped_execvpe();
         } else {
             let _ = bill.post_launch_pairent();
         }
-        let output = process::Process {
+        let mut output = process::Process {
             executable: self.executable.clone(),
             argv: self.argv.clone(),
             envp: self.envp.clone(),
@@ -119,6 +114,13 @@ impl Ceaer {
             return_code: 0,
             launched_process_id: child_id,
         };
+        if child_id == 0 {
+            // is child process
+
+            let _ = output._wrapped_execvpe();
+        } else {
+
+        }
         Ok(output)
     }
 }
