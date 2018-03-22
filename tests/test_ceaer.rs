@@ -293,8 +293,6 @@ fn test_launch_with_4() {
     assert!(output == test_data);
 }
 
-
-
 #[test]
 fn test_launch_cat_stdin_stdout_kill() {
     let foo = feaer::Ceaer::new();
