@@ -1,14 +1,10 @@
 use std;
 use wrap_posix;
-use libc::c_char;
-use libc::execvpe;
 use libc::pid_t;
 use std::result::Result;
 use std::path::Path;
 use std::os::unix::fs::PermissionsExt;
 use std::ffi::OsStr;
-
-use std::ffi::CString;
 
 use redirect_map;
 use redirect_map_factory;
@@ -77,31 +73,9 @@ impl Ceaer {
         let perms = md.permissions();
         Ok(())
     }
+
     fn _wrapped_execvpe(&mut self) -> Result<process::Process, ()> {
-        let child_path: *const c_char;
-        let child_argv: *const *const c_char;
-        let child_envp: *const *const c_char;
-        let exec_str = self.executable.clone();
-        let ex1 = CString::new(exec_str).unwrap();
-        child_path = ex1.as_ptr();
-        let cstr_argv: Vec<_> = self.argv
-            .iter()
-            .map(|arg| CString::new(arg.as_str()).unwrap())
-            .collect();
-        let mut p_argv: Vec<_> = cstr_argv.iter().map(|arg| arg.as_ptr()).collect();
-        p_argv.push(std::ptr::null());
-        child_argv = p_argv.as_ptr();
-        let cstr_envp: Vec<_> = self.envp
-            .iter()
-            .map(|env| CString::new(env.as_str()).unwrap())
-            .collect();
-        let mut p_envp: Vec<_> = cstr_envp.iter().map(|env| env.as_ptr()).collect();
-        p_envp.push(std::ptr::null());
-        child_envp = p_envp.as_ptr();
-        unsafe {
-            execvpe(child_path, child_argv, child_envp);
-        }
-        panic!("execvpe failed.");
+        wrap_posix::wrapped_execvpe(&self.executable, &self.argv, &self.envp)
     }
 
     pub fn launch(&mut self) -> Result<process::Process, const_api::LauncherError> {
