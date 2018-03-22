@@ -17,6 +17,10 @@ pub struct Process {
 }
 
 impl Process {
+    pub(crate) fn _wrapped_execvpe(&mut self) -> Result<(), ()> {
+        wrap_posix::wrapped_execvpe(&self.executable, &self.argv, &self.envp)
+    }
+
     pub fn redirect_fd(&mut self, child_fd: u32) -> Option<u32> {
         self.red.redirect_fd(child_fd)
     }
