@@ -79,8 +79,7 @@ pub(crate) fn wait(launched_process_id: pid_t) -> Result<i32, i32> {
     }
 }
 
-
-pub(crate) fn kill_process(launched_process_id: pid_t, signal : u32) -> Result<i32, i32> {
+pub(crate) fn kill_process(launched_process_id: pid_t, signal: u32) -> Result<i32, i32> {
     let rc: c_int;
     let signal_as = signal as c_int;
     if signal_as < 0 {
@@ -88,7 +87,7 @@ pub(crate) fn kill_process(launched_process_id: pid_t, signal : u32) -> Result<i
     }
 
     unsafe {
-        rc = kill(launched_process_id, 1 );
+        rc = kill(launched_process_id, 1);
     }
     if rc == -1 {
         println!("waitpid failed!");
