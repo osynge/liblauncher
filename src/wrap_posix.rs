@@ -7,9 +7,15 @@ use std::io::Error;
 use libc::pid_t;
 use libc::waitpid;
 use libc::kill;
+use libc::fork;
 use libc::WNOHANG;
 
 use const_api;
+
+use ceaer::Ceaer;
+
+use process;
+use redirect_map;
 
 pub(crate) fn posix_close(file_num: c_int) -> Result<(), const_api::LauncherError> {
     unsafe {
@@ -98,4 +104,18 @@ pub(crate) fn kill_process(launched_process_id: pid_t, signal: u32) -> Result<i3
     } else {
         return Err(-4);
     }
+}
+
+pub(crate) fn fork_process() -> Result<pid_t, ()> {
+    let child_id: pid_t;
+    unsafe {
+        let launched_process_id = fork();
+
+        if launched_process_id < 0 {
+            return Err(());
+        } else {
+            child_id = launched_process_id;
+        }
+    }
+    Ok(child_id)
 }
